@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>מאמן הסטטיסטיקה של לייה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117;--sur:#1a1d27;--sur2:#22263a;
+  --acc:#6c63ff;--acc2:#ff6584;--acc3:#43e97b;--acc4:#f7b731;
+  --tx:#e8eaf6;--txd:#8b8fa8;--bdr:#2e3250;
+  --easy:#43e97b;--med:#4facfe;--hard:#f7b731;--gen:#ff6584;
+  --rad:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;direction:rtl}
+body::before{content:'';position:fixed;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(108,99,255,.15) 0%,transparent 70%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;bottom:-200px;left:-200px;width:500px;height:500px;background:radial-gradient(circle,rgba(255,101,132,.12) 0%,transparent 70%);pointer-events:none;z-index:0}
+.screen{display:none;position:relative;z-index:1;min-height:100vh;padding:20px;max-width:700px;margin:0 auto}
+.screen.active{display:flex;flex-direction:column}
+#homeScreen{align-items:center;justify-content:center;gap:22px;padding:36px 20px}
+.logo{font-family:'Heebo',sans-serif;font-weight:900;font-size:44px;background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;line-height:1.2}
+.sub{font-size:14px;color:var(--txd);text-align:center;margin-top:-4px}
+.home-icon{font-size:54px;animation:flt 3s ease-in-out infinite}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.score-bar{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rad);padding:14px 22px;width:100%;display:flex;gap:22px;justify-content:center}
+.si{text-align:center}
+.si .v{font-family:'Heebo',sans-serif;font-weight:900;font-size:26px;color:var(--acc)}
+.si .l{font-size:11px;color:var(--txd)}
+.level-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.lb{padding:18px 14px;border-radius:var(--rad);border:2px solid transparent;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:800;font-size:15px;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:54px;position:relative;overflow:hidden}
+.lb::before{content:'';position:absolute;inset:0;opacity:.12}
+.lb:active{transform:scale(.97)}.lb:hover{transform:translateY(-2px)}
+.lb.easy{background:rgba(67,233,123,.1);border-color:var(--easy);color:var(--easy)}.lb.easy::before{background:var(--easy)}
+.lb.medium{background:rgba(79,172,254,.1);border-color:var(--med);color:var(--med)}.lb.medium::before{background:var(--med)}
+.lb.hard{background:rgba(247,183,49,.1);border-color:var(--hard);color:var(--hard)}.lb.hard::before{background:var(--hard)}
+.lb.genius{background:rgba(255,101,132,.1);border-color:var(--gen);color:var(--gen)}.lb.genius::before{background:var(--gen)}
+.lb .li{font-size:20px}.lb .lt{font-size:10px;opacity:.7;font-weight:600;text-align:center}
+#questionScreen{gap:14px;padding:14px}
+.qh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.back-btn{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;color:var(--txd);cursor:pointer;padding:7px 13px;font-size:18px;min-height:44px;transition:all .2s}
+.back-btn:hover{color:var(--tx);border-color:var(--acc)}
+.bdg{padding:5px 13px;border-radius:20px;font-weight:800;font-size:12px}
+.be{background:rgba(67,233,123,.2);color:var(--easy)}.bm{background:rgba(79,172,254,.2);color:var(--med)}
+.bh{background:rgba(247,183,49,.2);color:var(--hard)}.bg{background:rgba(255,101,132,.2);color:var(--gen)}
+.qstats{margin-right:auto;display:flex;gap:12px;align-items:center}
+.pill{background:var(--sur);border:1px solid var(--bdr);border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700}
+.pill-str{color:var(--acc4)}.pill-sc{color:var(--acc3)}
+.pbw{background:var(--sur);border-radius:6px;height:6px;overflow:hidden}
+.pbf{height:100%;background:linear-gradient(270deg,var(--acc),var(--acc2));border-radius:6px;transition:width .4s ease}
+.qcard{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rad);padding:22px;flex:1}
+.qtype{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txd);margin-bottom:8px}
+.qtext{font-size:16px;font-weight:700;line-height:1.7;margin-bottom:14px}
+.dataset-box{background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.dataset-label{font-size:11px;color:var(--txd);font-weight:700;width:100%;margin-bottom:3px}
+.chip{background:var(--acc);color:#fff;font-weight:800;font-size:15px;width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.chip.hl{background:var(--acc2);animation:pc .5s ease}
+@keyframes pc{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.ftable{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:13px}
+.ftable th{background:var(--sur2);color:var(--txd);padding:7px 11px;text-align:right;font-weight:700;font-size:11px}
+.ftable td{padding:7px 11px;border-bottom:1px solid var(--bdr);font-weight:600;text-align:right}
+.ftable tr:last-child td{border-bottom:none}
+.chart-wrap{background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:10px;margin-bottom:14px}
+.pie-wrap{display:flex;align-items:center;gap:18px;background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:14px;margin-bottom:14px;flex-wrap:wrap}
+.pie-legend{display:flex;flex-direction:column;gap:8px}
+.pie-leg-item{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.pie-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.answer-area{display:flex;flex-direction:column;gap:9px}
+.num-input{background:var(--sur2);border:2px solid var(--bdr);border-radius:11px;color:var(--tx);font-family:'Heebo',sans-serif;font-size:19px;font-weight:700;padding:13px 16px;width:100%;outline:none;transition:border-color .2s;-webkit-appearance:none;text-align:center;direction:ltr}
+.num-input:focus{border-color:var(--acc)}.num-input.wrong{border-color:var(--acc2);background:rgba(255,101,132,.08)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.choice-btn{background:var(--sur2);border:2px solid var(--bdr);border-radius:11px;color:var(--tx);cursor:pointer;font-family:'Heebo',sans-serif;font-size:14px;font-weight:700;padding:13px 9px;text-align:center;transition:all .2s;min-height:54px}
+.choice-btn:hover:not(:disabled){border-color:var(--acc);transform:translateY(-1px)}
+.choice-btn.sel{border-color:var(--acc);background:rgba(108,99,255,.12)}
+.choice-btn.cor{border-color:var(--acc3)!important;background:rgba(67,233,123,.15)!important;color:var(--acc3)!important}
+.choice-btn.wrg{border-color:var(--acc2)!important;background:rgba(255,101,132,.1)!important;color:var(--acc2)!important}
+.choice-btn:disabled{cursor:default}
+.btn-row{display:flex;gap:9px}
+.btn{border:none;border-radius:11px;cursor:pointer;font-family:'Heebo',sans-serif;font-size:14px;font-weight:800;padding:13px 20px;min-height:54px;transition:all .2s;flex:1}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--acc),#8b7cf8);color:#fff}
+.btn-hint{background:var(--sur2);border:1px solid var(--bdr);color:var(--acc4)}
+.btn-next{background:linear-gradient(135deg,var(--acc3),#2ecc71);color:#0f1117}
+.feedback{border-radius:11px;font-size:13px;font-weight:700;padding:13px 16px;display:none;line-height:1.6}
+.feedback.correct{background:rgba(67,233,123,.12);border:1px solid rgba(67,233,123,.3);color:var(--acc3)}
+.feedback.wrong{background:rgba(255,101,132,.1);border:1px solid rgba(255,101,132,.3);color:var(--acc2)}
+.feedback.hint{background:rgba(247,183,49,.1);border:1px solid rgba(247,183,49,.3);color:var(--acc4)}
+.str-pop{position:fixed;top:30%;left:50%;transform:translateX(-50%) scale(0);background:linear-gradient(135deg,var(--acc4),#ff9f43);color:#0f1117;font-family:'Heebo',sans-serif;font-weight:900;font-size:24px;padding:13px 26px;border-radius:18px;z-index:100;pointer-events:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0}
+.str-pop.show{transform:translateX(-50%) scale(1);opacity:1}
+#celebScreen{align-items:center;justify-content:center;gap:18px;text-align:center;padding:36px 20px}
+.celeb-icon{font-size:68px;animation:bnc .8s ease infinite alternate}
+@keyframes bnc{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-14px) rotate(5deg)}}
+.celeb-title{font-family:'Heebo',sans-serif;font-weight:900;font-size:36px;background:linear-gradient(135deg,var(--acc4),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.celeb-stats{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rad);padding:22px;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.cs-val{font-family:'Heebo',sans-serif;font-weight:900;font-size:32px}
+.cs-val.gold{color:var(--acc4)}.cs-val.green{color:var(--acc3)}.cs-val.pink{color:var(--acc2)}
+.cs-lbl{font-size:11px;color:var(--txd);font-weight:700}
+.trophies-row{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rad);padding:18px 22px;width:100%}
+.trophies-title{font-size:12px;color:var(--txd);font-weight:700;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
+.trophy-list{display:flex;gap:9px;flex-wrap:wrap}
+.trophy-badge{background:rgba(247,183,49,.15);border:1px solid rgba(247,183,49,.3);border-radius:9px;padding:7px 13px;font-size:12px;font-weight:700;color:var(--acc4);display:flex;align-items:center;gap:5px}
+.cfp{position:fixed;width:10px;height:10px;pointer-events:none;z-index:200;animation:cff 2.5s ease-in forwards}
+@keyframes cff{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@media(max-width:480px){.choices{grid-template-columns:1fr}.logo{font-size:34px}}
+</style>
+</head>
+<body>
+
+<!-- מסך בית -->
+<div id="homeScreen" class="screen active">
+  <div class="home-icon">&#128202;</div>
+  <div>
+    <div class="logo">מאמן הסטטיסטיקה של לייה</div>
+    <div class="sub">כיתה ח׳ · סטטיסטיקה</div>
+  </div>
+  <div class="score-bar">
+    <div class="si"><div class="v" id="totalScore">0</div><div class="l">ניקוד כולל</div></div>
+    <div class="si"><div class="v" id="totalCorrect">0</div><div class="l">תשובות נכונות</div></div>
+    <div class="si"><div class="v" id="bestStreak">0</div><div class="l">שיא רצף</div></div>
+  </div>
+  <div class="level-grid">
+    <button class="lb easy"   onclick="startLevel('easy')">  <span class="li">&#127807;</span><span>קל</span>    <span class="lt">ממוצע · חציון · שכיח</span></button>
+    <button class="lb medium" onclick="startLevel('medium')"><span class="li">&#128203;</span><span>בינוני</span><span class="lt">טבלאות · גרפים · אחוזים</span></button>
+    <button class="lb hard"   onclick="startLevel('hard')">  <span class="li">&#128200;</span><span>קשה</span>   <span class="lt">בעיות מילוליות · עוגה</span></button>
+    <button class="lb genius" onclick="startLevel('genius')"><span class="li">&#129504;</span><span>גאון</span>   <span class="lt">רב-שלבי · פרשנות</span></button>
+  </div>
+</div>
+
+<!-- מסך שאלה -->
+<div id="questionScreen" class="screen">
+  <div class="qh">
+    <button class="back-btn" onclick="goHome()">&#8594;</button>
+    <span class="bdg" id="levelBadge">קל</span>
+    <div class="qstats">
+      <span class="pill pill-str" id="streakDisp">&#128293; 0</span>
+      <span class="pill pill-sc"  id="scoreDisp">&#11088; 0</span>
+    </div>
+  </div>
+  <div class="pbw"><div class="pbf" id="progressBar" style="width:0%"></div></div>
+  <div class="qcard">
+    <div class="qtype"    id="qTypeTag">טוען...</div>
+    <div class="qtext"    id="qText">טוען...</div>
+    <div id="datasetArea"></div>
+    <div id="chartArea"></div>
+    <div class="answer-area" id="answerArea"></div>
+    <div class="feedback"    id="feedbackBox"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-hint"    id="hintBtn"   onclick="showHint()">&#128161; רמז</button>
+    <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">בדוק &#10003;</button>
+  </div>
+</div>
+
+<!-- מסך סיום -->
+<div id="celebScreen" class="screen">
+  <div class="celeb-icon"  id="celebIcon">&#127881;</div>
+  <div class="celeb-title" id="celebTitle">כל הכבוד!</div>
+  <p id="celebMsg" style="color:var(--txd);font-size:14px;"></p>
+  <div class="celeb-stats">
+    <div><div class="cs-val gold"  id="celebScore">0</div><div class="cs-lbl">ניקוד</div></div>
+    <div><div class="cs-val green" id="celebCorrect">0</div><div class="cs-lbl">נכון</div></div>
+    <div><div class="cs-val pink"  id="celebStreak">0</div><div class="cs-lbl">רצף מקסימלי</div></div>
+  </div>
+  <div class="trophies-row" id="trophiesRow" style="display:none">
+    <div class="trophies-title">גביעים שהושגו</div>
+    <div class="trophy-list" id="trophyList"></div>
+  </div>
+  <div class="btn-row" style="width:100%">
+    <button class="btn btn-hint" onclick="startLevel(currentLevel)" style="flex:1">שחק שוב</button>
+    <button class="btn btn-next" onclick="goHome()" style="flex:1">&#127968; בית</button>
+  </div>
+</div>
+
+<div class="str-pop" id="streakPopup">&#128293; רצף!</div>
+
+<script>
+var currentLevel='easy',score=0,totalScore=0,totalCorrect=0;
+var streak=0,bestStreak=0,sessionStreak=0;
+var currentAnswer=null,currentQuestion=null,answered=false,hintsUsed=0;
+var questionsThisSession=0,correctThisSession=0;
+var selectedChoice=null;
+var QPQ=10,TK='liyyahStats5';
+
+var TROPHIES={
+  fc:{i:'&#11088;',n:'כוכב ראשון'},
+  s3:{i:'&#128293;',n:'בוערת'},
+  s5:{i:'&#127775;',n:'סופרסטאר'},
+  s10:{i:'&#128142;',n:'יהלום'},
+  perf:{i:'&#127942;',n:'סיבוב מושלם'},
+  hm:{i:'&#128200;',n:'אנליסטית נתונים'},
+  gm:{i:'&#129504;',n:'סטטיסטיקאית'},
+  c100:{i:'&#128175;',n:'מאה נקודות'},
+  c500:{i:'&#128640;',n:'רקטה'}
+};
+function loadTrophies(){try{return JSON.parse(localStorage.getItem(TK)||'[]')}catch(e){return[]}}
+function saveTrophy(id){var t=loadTrophies();if(t.indexOf(id)===-1){t.push(id);localStorage.setItem(TK,JSON.stringify(t))}}
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active')}
+function goHome(){totalScore+=score;totalCorrect+=correctThisSession;if(sessionStreak>bestStreak)bestStreak=sessionStreak;document.getElementById('totalScore').textContent=totalScore;document.getElementById('totalCorrect').textContent=totalCorrect;document.getElementById('bestStreak').textContent=bestStreak;showScreen('homeScreen')}
+function startLevel(lvl){currentLevel=lvl;score=0;streak=0;sessionStreak=0;questionsThisSession=0;correctThisSession=0;answered=false;hintsUsed=0;
+  var bmap={easy:'be',medium:'bm',hard:'bh',genius:'bg'};
+  var nmap={easy:'קל',medium:'בינוני',hard:'קשה',genius:'גאון'};
+  var b=document.getElementById('levelBadge');b.className='bdg '+bmap[lvl];b.textContent=nmap[lvl];
+  updateHUD();nextQuestion();showScreen('questionScreen')}
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function shuffle(arr){return arr.slice().sort(function(){return Math.random()-.5})}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function round1(x){return Math.round(x*10)/10}
+function rSet(n,lo,hi,dup){var v=[];while(v.length<n){var x=rand(lo,hi);if(dup||v.indexOf(x)===-1)v.push(x)}return v.sort(function(a,b){return a-b})}
+
+// שמות ישראליים
+var NF=['\u05E0\u05D5\u05E2','\u05D9\u05E2\u05DC','\u05D3\u05E0\u05D4','\u05E9\u05D9\u05E8\u05D4','\u05DE\u05D9\u05D4','\u05E8\u05D5\u05E0\u05D9\u05EA','\u05D9\u05E0\u05D1\u05DC','\u05DC\u05D9\u05D4\u05D9'];
+var NM=['\u05D0\u05D9\u05EA\u05DF','\u05E0\u05D5\u05E2\u05DD','\u05E2\u05DE\u05D9\u05EA','\u05E8\u05D5\u05DF','\u05D2\u05D9\u05D0','\u05D0\u05D9\u05D3\u05D5','\u05D2\u05DC','\u05D8\u05DC'];
+// = ['נוע','יעל','דנה','שירה','מיה','רונית','ינבל','ליהי'] and ['איתן','נועם','עמית','רון','גיא','אידו','גל','טל']
+function pName(){return pick(NF.concat(NM))}
+function pNames(n){return shuffle(NF.concat(NM)).slice(0,n)}
+function calcMean(a){return a.reduce(function(x,y){return x+y},0)/a.length}
+function calcMedian(a){var s=a.slice().sort(function(x,y){return x-y});var m=Math.floor(s.length/2);return s.length%2===0?(s[m-1]+s[m])/2:s[m]}
+function calcRange(a){return Math.max.apply(null,a)-Math.min.apply(null,a)}
+
+// ── שאלות קל ──────────────────────────────────────────────────
+function easyMean(){var a;do{a=rSet(5,2,20,true)}while(a.reduce(function(x,y){return x+y},0)%5!==0);var m=calcMean(a);var s=a.reduce(function(x,y){return x+y},0);return{type:'ממוצע',text:'מצאו את ה<strong>ממוצע</strong> של קבוצת הנתונים:',dataset:a,ans:m,hint:'חברו את כל המספרים ואז חלקו ב-'+a.length+'.',expl:'סכום='+s+'. ממוצע='+s+'/'+a.length+'='+m,inp:'num'}}
+function easyMedianOdd(){var n=pick([5,7]);var a=rSet(n,1,20,true);var s=a.slice().sort(function(x,y){return x-y});var med=calcMedian(a);return{type:'חציון',text:'מצאו את ה<strong>חציון</strong> של קבוצת הנתונים:',dataset:a,ans:med,hint:'סדרו מהקטן לגדול. החציון הוא הערך האמצעי (מיקום '+Math.ceil(n/2)+').',expl:'מסודר: '+s.join(', ')+'. חציון='+med,inp:'num'}}
+function easyMedianEven(){var a=rSet(6,2,20,true);var s=a.slice().sort(function(x,y){return x-y});var med=calcMedian(a);return{type:'חציון (מספר זוגי)',text:'מצאו את ה<strong>חציון</strong> של 6 הנתונים הבאים:',dataset:a,ans:med,hint:'קודם סדרו. חציון = ממוצע של הערך ה-3 והערך ה-4.',expl:'מסודר: '+s.join(', ')+'. חציון=('+s[2]+'+'+s[3]+')/2='+med,inp:'num'}}
+function easyMode(){var base=rSet(4,2,15,false);var mv=pick(base);var a=shuffle(base.concat([mv]));return{type:'שכיח',text:'מצאו את ה<strong>שכיח</strong> של קבוצת הנתונים:',dataset:a,ans:mv,hint:'השכיח הוא המספר שמופיע הכי הרבה פעמים.',expl:mv+' מופיע פעמיים, שאר המספרים פעם אחת. שכיח='+mv,inp:'num'}}
+function easyRange(){var a=rSet(6,1,30,true);return{type:'טווח',text:'מצאו את ה<strong>טווח</strong> של קבוצת הנתונים:',dataset:a,ans:calcRange(a),hint:'טווח = הערך הגדול ביותר פחות הערך הקטן ביותר',expl:'מקסימום='+Math.max.apply(null,a)+', מינימום='+Math.min.apply(null,a)+'. טווח='+calcRange(a),inp:'num'}}
+function easyIdentify(){var qs=[
+  {t:'איזה מדד אומר לנו מהו ה<strong>ערך הנפוץ ביותר</strong> בנתונים?',a:'שכיח'},
+  {t:'איזה מדד הוא ה<strong>ערך האמצעי</strong> כשהנתונים מסודרים?',a:'חציון'},
+  {t:'איזה מדד מראה <strong>כמה הנתונים פרוסים</strong> (מקסימום פחות מינימום)?',a:'טווח'},
+  {t:'איזה מדד מחשבים על ידי <strong>חיבור כל הערכים וחלוקה</strong> במספרם?',a:'ממוצע'}
+];var q=pick(qs);return{type:'זיהוי מדד',text:q.t,ans:q.a,choices:['ממוצע','חציון','שכיח','טווח'],hint:'ממוצע=מדד מרכזי, חציון=אמצעי, שכיח=נפוץ ביותר, טווח=פיזור.',expl:'תשובה: '+q.a,inp:'ch'}}
+
+// ── שאלות בינוני ──────────────────────────────────────────────
+function medFreqMean(){var vals=[1,2,3,4,5];var fr=vals.map(function(){return rand(1,6)});var tot=fr.reduce(function(a,b){return a+b},0);var sum=vals.reduce(function(s,v,i){return s+v*fr[i]},0);var m=round1(sum/tot);return{type:'טבלת שכיחויות — ממוצע',text:'בעזרת טבלת השכיחויות, חשבו את ה<strong>ממוצע</strong>:',freqTable:{vals:vals,fr:fr,hdrs:['ערך','שכיחות']},ans:m,hint:'הכפילו כל ערך בשכיחות שלו. חברו את המכפלות. חלקו בסך השכיחויות ('+tot+').',expl:'סכום משוקלל='+sum+'. סך שכיחויות='+tot+'. ממוצע='+m,inp:'num'}}
+function medFreqMedian(){var vals=[10,20,30,40,50];var fr=vals.map(function(){return rand(1,5)});var tot=fr.reduce(function(a,b){return a+b},0);var full=[];vals.forEach(function(v,i){for(var j=0;j<fr[i];j++)full.push(v)});var med=calcMedian(full);return{type:'טבלת שכיחויות — חציון',text:'הטבלה מראה ציוני חידון. מצאו את ה<strong>חציון</strong>:',freqTable:{vals:vals,fr:fr,hdrs:['ציון','שכיחות']},ans:med,hint:'סך תלמידים='+tot+'. מצאו את המיקום האמצעי ברשימה המסודרת.',expl:'הרשימה המסודרת מכילה '+tot+' ערכים. חציון='+med,inp:'num'}}
+function medRelFreq(){var tot=pick([20,25,40,50]);var fr=rand(2,tot-2);var pct=Math.round((fr/tot)*100);var ctx=pick(['שעברו','שמשחקים ספורט','שיש להם חיית מחמד','שהולכים ברגל לבית הספר']);return{type:'שכיחות יחסית',text:'בכיתה של <strong>'+tot+' תלמידים</strong>, <strong>'+fr+'</strong> תלמידים '+ctx+'.<br>מהי ה<strong>שכיחות היחסית</strong> באחוזים?',ans:pct,hint:'שכיחות יחסית (%) = (שכיחות / סך הכל) × 100',expl:'('+fr+'/'+tot+') × 100 = '+pct+'%',inp:'num'}}
+function medBarChart(){var ctxs=[{c:['\u05D9\u05D5\u05DD \u05D0\'','\u05D9\u05D5\u05DD \u05D1\'','\u05D9\u05D5\u05DD \u05D2\'','\u05D9\u05D5\u05DD \u05D3\'']},{c:['\u05E8\u05D5\u05DF','\u05E0\u05D5\u05E2','\u05E2\u05DE\u05D9\u05EA','\u05D2\u05DC']},{c:['\u05DB\u05D9\u05EA\u05D4 \u05D0\'','\u05DB\u05D9\u05EA\u05D4 \u05D1\'','\u05DB\u05D9\u05EA\u05D4 \u05D2\'','\u05DB\u05D9\u05EA\u05D4 \u05D3\'']}];
+// = [['יום א','יום ב','יום ג','יום ד'],['רון','נוע','עמית','גל'],['כיתה א','כיתה ב','כיתה ג','כיתה ד']]
+var ctx=pick(ctxs);var vals=ctx.c.map(function(){return rand(2,16)});var qt=pick(['max','min','total','range','mean']);var ans,txt,hint,expl;
+if(qt==='max'){ans=Math.max.apply(null,vals);txt='מהו ה<strong>ערך הגבוה ביותר</strong> בגרף?';hint='מצאו את העמודה הגבוהה ביותר.';expl='הגבוה ביותר='+ans}
+else if(qt==='min'){ans=Math.min.apply(null,vals);txt='מהו ה<strong>ערך הנמוך ביותר</strong> בגרף?';hint='מצאו את העמודה הנמוכה ביותר.';expl='הנמוך ביותר='+ans}
+else if(qt==='total'){ans=vals.reduce(function(a,b){return a+b},0);txt='מהו <strong>סך כל הערכים</strong> בגרף?';hint='חברו את גובה כל העמודות.';expl=vals.join('+')+' = '+ans}
+else if(qt==='range'){ans=calcRange(vals);txt='מהו ה<strong>טווח</strong> של הערכים?';hint='טווח = עמודה גבוהה פחות עמודה נמוכה.';expl=Math.max.apply(null,vals)+'-'+Math.min.apply(null,vals)+'='+ans}
+else{var s=vals.reduce(function(a,b){return a+b},0);ans=round1(s/vals.length);txt='מהו ה<strong>ממוצע</strong> של הערכים?';hint='חברו את הערכים וחלקו ב-'+vals.length;expl='סכום='+s+'. ממוצע='+ans}
+return{type:'גרף עמודות',text:txt,barChart:{cats:ctx.c,vals:vals},ans:ans,hint:hint,expl:expl,inp:'num'}}
+function medPieSimple(){var total=pick([40,50,100,200]);var pctA=pick([20,25,30,40,50,60]);var pctB=100-pctA;
+var pairs=[['\u05D1\u05E0\u05D9\u05DD','\u05D1\u05E0\u05D5\u05EA'],['\u05E2\u05D1\u05E8\u05D5','\u05E0\u05DB\u05E9\u05DC\u05D5'],['\u05D1\u05E8\u05D2\u05DC','\u05D1\u05D0\u05D5\u05D8\u05D5\u05D1\u05D5\u05E1'],['\u05D0\u05D5\u05D4\u05D1\u05D9\u05DD \u05DE\u05EA\u05DE\u05D8\u05D9\u05E7\u05D4','\u05DE\u05E2\u05D3\u05D9\u05E4\u05D9\u05DD \u05D0\u05D7\u05E8']];
+// = [['בנים','בנות'],['עברו','נכשלו'],['ברגל','באוטובוס'],['אוהבים מתמטיקה','מעדיפים אחר']]
+var pair=pick(pairs);var labA=pair[0],labB=pair[1];var cntA=Math.round(pctA/100*total);var cntB=total-cntA;var ask=pick(['A','B']);var ans=ask==='A'?cntA:cntB;var askLab=ask==='A'?labA:labB;var askPct=ask==='A'?pctA:pctB;
+return{type:'תרשים עוגה',text:'תרשים העוגה מראה נתונים על <strong>'+total+' תלמידים</strong>.<br>כמה <strong>'+askLab+'</strong> יש?',pieChart:{total:total,slices:[{label:labA,pct:pctA,color:'#6c63ff'},{label:labB,pct:pctB,color:'#ff6584'}]},ans:ans,hint:askPct+'% מתוך '+total+' = ?   נוסחה: אחוז / 100 × סך הכל',expl:askPct+'% מ-'+total+' = '+askPct+'/100 × '+total+' = '+ans,inp:'num'}}
+
+// ── שאלות קשה ─────────────────────────────────────────────────
+function hardMissing(){var n=rand(4,6);var m=rand(8,25);var tot=m*n;var kv=rSet(n-1,5,35,true);var ks=kv.reduce(function(a,b){return a+b},0);var miss=tot-ks;if(miss<1||miss>50)return hardMissing();var nm=pName();return{type:'מציאת ערך חסר',text:nm+' מדד '+n+' מדידות. הממוצע הוא <strong>'+m+'</strong>.<br>הערכים הידועים: <strong>'+kv.join(', ')+'</strong><br>מהו הערך החסר?',ans:miss,hint:'סך הנדרש = '+m+' × '+n+' = '+tot+'. חסרו את סכום הידוע.',expl:'סך נדרש='+tot+'. סכום ידוע='+ks+'. חסר='+miss,inp:'num'}}
+function hardFreqMissing(){var vals=[1,2,3,4,5];var fr=vals.map(function(){return rand(2,8)});var tot=fr.reduce(function(a,b){return a+b},0);var mi=rand(0,4);var mf=fr[mi];var ks=tot-mf;var df=fr.slice();df[mi]='?';return{type:'טבלת שכיחויות — שכיחות חסרה',text:'סך כל התלמידים הוא <strong>'+tot+'</strong>. שכיחות אחת חסרה. מצאו אותה:',freqTable:{vals:vals,fr:df,hdrs:['ציון','שכיחות']},ans:mf,hint:'חברו את השכיחויות הידועות. חסרה = סך הכל פחות סכום ידוע.',expl:'סכום ידוע='+ks+'. חסרה='+tot+'-'+ks+'='+mf,inp:'num'}}
+function hardRelFreq(){var tot=pick([40,50,80,100,200]);var pct=pick([10,15,20,25,30,40]);var cnt=(pct/100)*tot;var ctx=pick(['\u05E9\u05E2\u05D1\u05E8\u05D5 \u05D0\u05EA \u05D4\u05D1\u05D7\u05D9\u05E0\u05D4','\u05E9\u05DE\u05E9\u05D7\u05E7\u05D9\u05DD \u05E1\u05E4\u05D5\u05E8\u05D8','\u05E9\u05D9\u05E9 \u05DC\u05D4\u05DD \u05D7\u05D9\u05D9\u05EA \u05DE\u05D7\u05DE\u05D3','\u05E9\u05D4\u05D5\u05DC\u05DB\u05D9\u05DD \u05D1\u05E8\u05D2\u05DC \u05DC\u05D1\u05D9\u05EA\u05D4\u05E1\u05E4\u05E8']);
+// = ['שעברו את הבחינה','שמשחקים ספורט','שיש להם חיית מחמד','שהולכים ברגל לבית הספר']
+return{type:'שכיחות יחסית',text:'בכיתה של <strong>'+tot+' תלמידים</strong>, <strong>'+cnt+'</strong> תלמידים '+ctx+'.<br>מהי השכיחות היחסית ב<strong>אחוזים</strong>?',ans:pct,hint:'(שכיחות / סך הכל) × 100',expl:'('+cnt+'/'+tot+') × 100 = '+pct+'%',inp:'num'}}
+function hardPieChart(){var total=pick([60,80,100,120,200]);var pctA=pick([15,20,25,30,35,40,45]);var pctC=pick([5,10,15]);var pctB=100-pctA-pctC;if(pctB<10)return hardPieChart();
+var groups=[['\u05DB\u05D3\u05D5\u05E8\u05D2\u05DC','\u05DB\u05D3\u05D5\u05E8\u05E1\u05DC','\u05D0\u05D7\u05E8'],['\u05E2\u05D1\u05E8\u05D9\u05EA','\u05DE\u05EA\u05DE\u05D8\u05D9\u05E7\u05D4','\u05D0\u05D7\u05E8'],['\u05D1\u05E8\u05D2\u05DC','\u05D1\u05D0\u05D5\u05D8\u05D5\u05D1\u05D5\u05E1','\u05D1\u05DE\u05DB\u05D5\u05E0\u05D9\u05EA']];
+// = [['כדורגל','כדורסל','אחר'],['עברית','מתמטיקה','אחר'],['ברגל','באוטובוס','במכונית']]
+var grp=pick(groups);var labA=grp[0],labB=grp[1],labC=grp[2];var cntA=Math.round(pctA/100*total);var cntC=Math.round(pctC/100*total);var cntB=total-cntA-cntC;var ask=pick(['A','B','diff']);var ans,txt;
+if(ask==='A'){ans=cntA;txt='כמה תלמידים בחרו ב<strong>'+labA+'</strong>?'}
+else if(ask==='B'){ans=cntB;txt='כמה תלמידים בחרו ב<strong>'+labB+'</strong>?'}
+else{ans=Math.abs(cntA-cntB);var bigger=cntA>=cntB?labA:labB;var smaller=cntA>=cntB?labB:labA;txt='כמה <strong>יותר</strong> תלמידים בחרו ב'+bigger+' מאשר ב'+smaller+'?'}
+return{type:'תרשים עוגה',text:'סקר של <strong>'+total+' תלמידים</strong> על המקצוע האהוב.<br>'+txt,pieChart:{total:total,slices:[{label:labA,pct:pctA,color:'#6c63ff'},{label:labB,pct:pctB,color:'#ff6584'},{label:labC,pct:pctC,color:'#43e97b'}]},ans:ans,hint:ask==='diff'?'חשבו כל קבוצה בנפרד ואז חסרו.':'('+( ask==='A'?pctA:pctB )+'% / 100) × '+total,expl:labA+'='+pctA+'%='+cntA+'. '+labB+'='+pctB+'%='+cntB+(ask==='diff'?'. הפרש='+ans:''),inp:'num'}}
+function hardWordProblem(){var ns=pNames(5);var vals=rSet(5,10,50,true);var meas=pick(['median','range','mode']);var ctx=pick(['\u05E0\u05E7\u05D5\u05D3\u05D5\u05EA \u05E9\u05D4\u05D5\u05E9\u05D2\u05D5','\u05E7\u05DE \u05E9\u05E8\u05DB\u05D1\u05D5 \u05D1\u05D0\u05D5\u05E4\u05E0\u05D9\u05D9\u05DD','\u05E9\u05E7\u05DC\u05D9\u05DD \u05E9\u05D7\u05E1\u05DB\u05D5']);
+// ctx = ['נקודות שהושגו','קמ שרכבו באופניים','שקלים שחסכו']
+var ans,txt,hint,expl;
+if(meas==='median'){var s=vals.slice().sort(function(a,b){return a-b});ans=s[2];txt='חמישה תלמידים רשמו את ה'+ctx+' שלהם:<br>'+ns.map(function(n,i){return n+': '+vals[i]}).join(', ')+'<br>מצאו את ה<strong>חציון</strong>.';hint='סדרו ומצאו את הערך האמצעי (ה-3 מתוך 5).';expl='מסודר: '+s.join(', ')+'. חציון='+ans}
+else if(meas==='range'){ans=calcRange(vals);txt='חמישה תלמידים רשמו את ה'+ctx+':<br>'+ns.map(function(n,i){return n+': '+vals[i]}).join(', ')+'<br>מצאו את ה<strong>טווח</strong>.';hint='טווח = הגדול ביותר פחות הקטן ביותר';expl='מקסימום='+Math.max.apply(null,vals)+', מינימום='+Math.min.apply(null,vals)+'. טווח='+ans}
+else{var mv=vals[0];vals[1]=mv;ans=mv;txt='חמישה תלמידים רשמו את ה'+ctx+':<br>'+ns.map(function(n,i){return n+': '+vals[i]}).join(', ')+'<br>מצאו את ה<strong>שכיח</strong>.';hint='השכיח הוא הערך שמופיע הכי הרבה.';expl=mv+' מופיע פעמיים. שכיח='+mv}
+return{type:'בעיה מילולית — '+({'median':'חציון','range':'טווח','mode':'שכיח'}[meas]),text:txt,ans:ans,hint:hint,expl:expl,inp:'num'}}
+function hardChooseMeasure(){var sc=[
+  {t:'כיתה רוצה לדעת מהי <strong>תוספת הפיצה הפופולרית ביותר</strong>.',a:'שכיח',h:'איזה מדד מוצא את הערך הנפוץ ביותר?'},
+  {t:'מורה רוצה <strong>ציון טיפוסי</strong> שלא מושפע מציונים קיצוניים.',a:'חציון',h:'איזה מדד לא מושפע מערכים קיצוניים?'},
+  {t:'תלמידים רוצים להראות <strong>כמה הנתונים פרוסים</strong>.',a:'טווח',h:'איזה מדד מתאר את הפיזור?'},
+  {t:'כדי למצוא את <strong>דמי הכיס הממוצעים</strong> לתלמיד.',a:'ממוצע',h:'"ממוצע" = ממוצע חשבוני.'},
+  {t:'ציונים: <strong>70, 72, 71, 70, 68, 100</strong>. מהו המדד הטוב ביותר לציון טיפוסי?',a:'חציון',h:'100 הוא ערך חריג. איזה מדד פחות מושפע?'},
+  {t:'חנות נעליים רוצה לדעת איזה מידה <strong>להחזיק הכי הרבה</strong>.',a:'שכיח',h:'הם רוצים את הערך הנפוץ ביותר.'}
+];var s=pick(sc);return{type:'בחרו את המדד המתאים',text:s.t,ans:s.a,choices:['ממוצע','חציון','שכיח','טווח'],hint:s.h,expl:'תשובה: '+s.a,inp:'ch'}}
+
+// ── שאלות גאון ────────────────────────────────────────────────
+function genCompare(){var a=rSet(5,5,30,true);var b=rSet(5,5,30,true);var mA=round1(calcMean(a)),mB=round1(calcMean(b)),rA=calcRange(a),rB=calcRange(b),mdA=calcMedian(a),mdB=calcMedian(b);var q=pick(['mean','range','median']);var ans;
+if(q==='mean')ans=mA>mB?'\u05E7\u05D1\u05D5\u05E6\u05D4 A':mB>mA?'\u05E7\u05D1\u05D5\u05E6\u05D4 B':'\u05E9\u05D5\u05D5\u05D4';
+else if(q==='range')ans=rA>rB?'\u05E7\u05D1\u05D5\u05E6\u05D4 A':rB>rA?'\u05E7\u05D1\u05D5\u05E6\u05D4 B':'\u05E9\u05D5\u05D5\u05D4';
+else ans=mdA>mdB?'\u05E7\u05D1\u05D5\u05E6\u05D4 A':mdB>mdA?'\u05E7\u05D1\u05D5\u05E6\u05D4 B':'\u05E9\u05D5\u05D5\u05D4';
+// ans options = 'קבוצה A','קבוצה B','שווה'
+var qHeb={'mean':'ממוצע','range':'טווח','median':'חציון'}[q];
+return{type:'השוואת קבוצות נתונים',text:'השוו את שתי קבוצות הנתונים:<br><strong>A:</strong> '+a.join(', ')+'<br><strong>B:</strong> '+b.join(', ')+'<br><br>לאיזו קבוצה יש <strong>'+qHeb+' גבוה יותר</strong>?',ans:ans,choices:['\u05E7\u05D1\u05D5\u05E6\u05D4 A','\u05E7\u05D1\u05D5\u05E6\u05D4 B','\u05E9\u05D5\u05D5\u05D4'],hint:'חשבו את ה'+qHeb+' לכל קבוצה והשוו.',expl:'A: ממוצע='+mA+', חציון='+mdA+', טווח='+rA+' | B: ממוצע='+mB+', חציון='+mdB+', טווח='+rB,inp:'ch'}}
+function genMissingTarget(){var tgt=rand(12,22);var ex=rSet(5,8,28,true);var exS=ex.reduce(function(a,b){return a+b},0);var need=tgt*6-exS;if(need<1||need>60)return genMissingTarget();var nm=pName();return{type:'מציאת ערך חסר לממוצע יעד',text:'ל'+nm+' יש 5 ציונים: <strong>'+ex.join(', ')+'</strong><br>איזה ציון צריך'+( nm==='\u05D2\u05DC'||nm==='\u05D8\u05DC'||nm==='\u05E8\u05D5\u05DF'||nm==='\u05D0\u05D9\u05D3\u05D5'||nm==='\u05D2\u05D9\u05D0'||nm==='\u05E0\u05D5\u05E2\u05DD'||nm==='\u05E2\u05DE\u05D9\u05EA'||nm==='\u05D0\u05D9\u05EA\u05DF'?'':'ת')+' '+nm+' בבחינה ה-6 כדי שהממוצע יהיה <strong>'+tgt+'</strong>?',ans:need,hint:'סכום נדרש = '+tgt+' × 6 = '+(tgt*6)+'. סכום נוכחי = '+exS+'.',expl:'סכום יעד='+(tgt*6)+'. נוכחי='+exS+'. חסר='+need,inp:'num'}}
+function genWeightedMean(){var n1=pick([20,25,30]),n2=pick([15,20,25]),m1=rand(60,85);var tgt=rand(65,82);var m2=Math.round((tgt*(n1+n2)-n1*m1)/n2);if(m2<50||m2>95)return genWeightedMean();var cm=round1((n1*m1+n2*m2)/(n1+n2));var names=pNames(2);var c1=names[0],c2=names[1];return{type:'ממוצע משוקלל',text:'כיתת '+c1+': <strong>'+n1+' תלמידים</strong>, ממוצע <strong>'+m1+'</strong>.<br>כיתת '+c2+': <strong>'+n2+' תלמידים</strong>, ממוצע <strong>'+m2+'</strong>.<br>מהו ה<strong>ממוצע המשותף</strong> של שתי הכיתות?',ans:cm,hint:'ממוצע משותף = (n1×ממוצע1 + n2×ממוצע2) / (n1+n2). אי אפשר פשוט לממצע את שני הממוצעים!',expl:'('+n1+'×'+m1+'+'+n2+'×'+m2+')/('+n1+'+'+n2+')='+cm,inp:'num'}}
+function genInterpret(){var qs=[
+  {t:'קבוצת נתונים: ממוצע=<strong>50</strong>, חציון=<strong>30</strong>. מה זה מרמז?',a:'\u05DE\u05D5\u05D8\u05D4 \u05DC\u05E2\u05E8\u05DB\u05D9\u05DD \u05D2\u05D1\u05D5\u05D4\u05D9\u05DD',c:['\u05DE\u05D5\u05D8\u05D4 \u05DC\u05E2\u05E8\u05DB\u05D9\u05DD \u05D2\u05D1\u05D5\u05D4\u05D9\u05DD','\u05DE\u05D5\u05D8\u05D4 \u05DC\u05E2\u05E8\u05DB\u05D9\u05DD \u05E0\u05DE\u05D5\u05DB\u05D9\u05DD','\u05E1\u05D9\u05DE\u05D8\u05E8\u05D9','\u05D0\u05D9\u05DF \u05D3\u05E4\u05D5\u05E1'],h:'כשממוצע > חציון, לאן מושכים הערכים הקיצוניים?',e:'ערכים גבוהים קיצוניים מושכים את הממוצע למעלה. הנתונים מוטים לכיוון ערכים גבוהים.'},
+  {t:'קבוצת נתונים: ממוצע=<strong>40</strong>, חציון=<strong>65</strong>. מה זה מרמז?',a:'\u05DE\u05D5\u05D8\u05D4 \u05DC\u05E2\u05E8\u05DB\u05D9\u05DD \u05E0\u05DE\u05D5\u05DB\u05D9\u05DD',c:['\u05DE\u05D5\u05D8\u05D4 \u05DC\u05E2\u05E8\u05DB\u05D9\u05DD \u05D2\u05D1\u05D5\u05D4\u05D9\u05DD','\u05DE\u05D5\u05D8\u05D4 \u05DC\u05E2\u05E8\u05DB\u05D9\u05DD \u05E0\u05DE\u05D5\u05DB\u05D9\u05DD','\u05E1\u05D9\u05DE\u05D8\u05E8\u05D9','\u05D0\u05D9\u05DF \u05D3\u05E4\u05D5\u05E1'],h:'כשממוצע < חציון, לאן מושכים הערכים הקיצוניים?',e:'ערכים נמוכים קיצוניים מושכים את הממוצע למטה. מוטה לכיוון ערכים נמוכים.'},
+  {t:'כיתה A: ממוצע=75, טווח=8. כיתה B: ממוצע=75, טווח=42. איזו כיתה <strong>אחידה יותר</strong>?',a:'\u05DB\u05D9\u05EA\u05D4 A',c:['\u05DB\u05D9\u05EA\u05D4 A','\u05DB\u05D9\u05EA\u05D4 B','\u05E9\u05D5\u05D5\u05D5\u05EA','\u05D0\u05D9 \u05D0\u05E4\u05E9\u05E8 \u05DC\u05D3\u05E2\u05EA'],h:'טווח קטן = ציונים קרובים יותר = יותר אחידות.',e:'אותו ממוצע, אך טווח כיתה A (8) קטן בהרבה. כיתה A אחידה יותר.'},
+  {t:'מכירות ביום: <strong>3, 4, 3, 3, 5, 4, 3, 80</strong>. מהו המדד הטוב ביותר ל<strong>יום טיפוסי</strong>?',a:'\u05E9\u05DB\u05D9\u05D7',c:['\u05DE\u05DE\u05D5\u05E6\u05E2','\u05D7\u05E6\u05D9\u05D5\u05DF','\u05E9\u05DB\u05D9\u05D7','\u05D8\u05D5\u05D5\u05D7'],h:'80 הוא ערך חריג עצום. איזה מדד לא מושפע ממנו כלל?',e:'80 מנפח את הממוצע. השכיח (3) מופיע הכי הרבה ולא מושפע.'},
+  {t:'אם מוסיפים <strong>999</strong> לקבוצת נתונים, איזה מדד משתנה <strong>הכי הרבה</strong>?',a:'\u05DE\u05DE\u05D5\u05E6\u05E2',c:['\u05DE\u05DE\u05D5\u05E6\u05E2','\u05D7\u05E6\u05D9\u05D5\u05DF','\u05E9\u05DB\u05D9\u05D7','\u05D8\u05D5\u05D5\u05D7'],h:'איזה מדד משתמש בכל ערך בחישוב שלו?',e:'הממוצע משתמש בכל הערכים, ולכן ערך קיצוני מושך אותו בצורה חזקה.'},
+  {t:'שתי קבוצות נתונים עם <strong>אותו ממוצע</strong> אך <strong>טווח שונה</strong>. מה הטווח אומר שהממוצע לא?',a:'\u05DB\u05DE\u05D4 \u05D4\u05E0\u05EA\u05D5\u05E0\u05D9\u05DD \u05E4\u05E8\u05D5\u05E1\u05D9\u05DD',c:['\u05DB\u05DE\u05D4 \u05D4\u05E0\u05EA\u05D5\u05E0\u05D9\u05DD \u05E4\u05E8\u05D5\u05E1\u05D9\u05DD','\u05D4\u05E2\u05E8\u05DA \u05D4\u05D8\u05D9\u05E4\u05D5\u05E1\u05D9','\u05DB\u05DE\u05D4 \u05E2\u05E8\u05DB\u05D9\u05DD \u05D9\u05E9','\u05D4\u05E2\u05E8\u05DA \u05D4\u05E0\u05E4\u05D5\u05E5 \u05D1\u05D9\u05D5\u05EA\u05E8'],h:'טווח = מקסימום פחות מינימום. מה זה מתאר?',e:'טווח מודד פיזור. אותו ממוצע לא אומר לנו אם הנתונים מרוכזים או פרוסים.'},
+  {t:'תלמידה ממוצע <strong>90</strong> ב-4 בחינות. איזה ציון ב-5 תשמור על ממוצע של <strong>90</strong>?',a:'90',c:['90','85','95','\u05D0\u05D9 \u05D0\u05E4\u05E9\u05E8 \u05DC\u05D3\u05E2\u05EA'],h:'הוספת ערך השווה לממוצע הנוכחי שומרת על הממוצע.',e:'ממוצע חדש=(360+90)/5=90. הוספת הממוצע עצמו תמיד שומרת עליו.'},
+  {t:'ציונים: <strong>10, 10, 10, 10, 10</strong>. מה נכון לגבי ממוצע, חציון ושכיח?',a:'\u05DE\u05DE\u05D5\u05E6\u05E2 = \u05D7\u05E6\u05D9\u05D5\u05DF = \u05E9\u05DB\u05D9\u05D7',c:['\u05DE\u05DE\u05D5\u05E6\u05E2 = \u05D7\u05E6\u05D9\u05D5\u05DF = \u05E9\u05DB\u05D9\u05D7','\u05E8\u05E7 \u05DE\u05DE\u05D5\u05E6\u05E2 = \u05D7\u05E6\u05D9\u05D5\u05DF','\u05E8\u05E7 \u05D4\u05E9\u05DB\u05D9\u05D7 \u05E9\u05D5\u05E0\u05D4','\u05D0\u05D9 \u05D0\u05E4\u05E9\u05E8 \u05DC\u05D3\u05E2\u05EA'],h:'כשכל הערכים זהים, מה קורה לכל מדד?',e:'כל הערכים=10. ממוצע=10, חציון=10, שכיח=10. כולם שווים.'}
+];var q=pick(qs);return{type:'פרשנות נתונים',text:q.t,ans:q.a,choices:q.c,hint:q.h,expl:q.e,inp:'ch'}}
+function genPieGenius(){var total=pick([80,100,150,200]);var pA=pick([15,20,25]),pB=pick([25,30,35]),pC=100-pA-pB;if(pC<10)return genPieGenius();
+var groups=[['\u05DB\u05D3\u05D5\u05E8\u05D2\u05DC','\u05DB\u05D3\u05D5\u05E8\u05E1\u05DC','\u05D8\u05E0\u05D9\u05E1'],['\u05D1\u05E8\u05D2\u05DC','\u05D1\u05D0\u05D5\u05D8\u05D5\u05D1\u05D5\u05E1','\u05D1\u05DE\u05DB\u05D5\u05E0\u05D9\u05EA'],['\u05E2\u05D1\u05E8\u05D9\u05EA','\u05DE\u05EA\u05DE\u05D8\u05D9\u05E7\u05D4','\u05D0\u05E0\u05D2\u05DC\u05D9\u05EA']];
+// = [['כדורגל','כדורסל','טניס'],['ברגל','באוטובוס','במכונית'],['עברית','מתמטיקה','אנגלית']]
+var labs=pick(groups);var cnts=[Math.round(pA/100*total),Math.round(pB/100*total)];cnts.push(total-cnts[0]-cnts[1]);var ask=pick(['0','1','diff01']);var ans,txt;
+if(ask==='0'){ans=cnts[0];txt='כמה תלמידים בחרו <strong>'+labs[0]+'</strong>?'}
+else if(ask==='1'){ans=cnts[1];txt='כמה תלמידים בחרו <strong>'+labs[1]+'</strong>?'}
+else{ans=Math.abs(cnts[0]-cnts[1]);var bigger=cnts[0]>=cnts[1]?labs[0]:labs[1];var smaller=cnts[0]>=cnts[1]?labs[1]:labs[0];txt='כמה <strong>יותר</strong> תלמידים בחרו '+bigger+' מאשר '+smaller+'?'}
+var cols=['#6c63ff','#ff6584','#43e97b'];
+return{type:'תרשים עוגה — אחוזים',text:'סקר של <strong>'+total+' תלמידים</strong>.<br>'+txt,pieChart:{total:total,slices:labs.map(function(l,i){return{label:l,pct:[pA,pB,pC][i],color:cols[i]}})},ans:ans,hint:ask==='diff01'?'חשבו כל קבוצה בנפרד ואז חסרו.':'('+[pA,pB][parseInt(ask)]+'% / 100) × '+total,expl:labs.map(function(l,i){return l+'='+[pA,pB,pC][i]+'%='+cnts[i]}).join(', ')+(ask==='diff01'?'. הפרש='+ans:''),inp:'num'}}
+function genChangeMean(){var n=rand(4,6);var a;do{a=rSet(n,10,30,true)}while(a.reduce(function(x,y){return x+y},0)%n!==0);var om=calcMean(a);var nm=om+1;var os=a.reduce(function(x,y){return x+y},0);var need=nm*(n+1)-os;if(need<5||need>60)return genChangeMean();return{type:'שינוי הממוצע',text:'קבוצת נתונים: <strong>'+a.join(', ')+'</strong><br>ממוצע = <strong>'+om+'</strong>.<br>איזה ערך יחיד צריך להוסיף כדי שהממוצע החדש יהיה בדיוק <strong>'+nm+'</strong>?',dataset:a,ans:need,hint:'ממוצע חדש('+nm+') × מספר ערכים חדש('+(n+1)+') = סכום נדרש. חסרו את הסכום הנוכחי.',expl:'נדרש='+nm+'×'+(n+1)+'='+(nm*(n+1))+'. נוכחי='+os+'. יש להוסיף: '+need,inp:'num'}}
+
+// ── מאגרי שאלות (כל גנרטור מופיע פעמיים ב-10 שאלות) ──────────
+var POOLS={
+  easy:[easyMean,easyMedianOdd,easyMedianEven,easyMode,easyRange,easyIdentify],
+  medium:[medFreqMean,medFreqMedian,medRelFreq,medBarChart,medPieSimple],
+  hard:[hardMissing,hardFreqMissing,hardRelFreq,hardPieChart,hardWordProblem,hardChooseMeasure],
+  genius:[genCompare,genMissingTarget,genWeightedMean,genInterpret,genPieGenius,genChangeMean]
+};
+var QUEUES={easy:[],medium:[],hard:[],genius:[]};
+function generateQuestion(lvl){if(QUEUES[lvl].length===0)QUEUES[lvl]=shuffle(POOLS[lvl].concat(POOLS[lvl]));return QUEUES[lvl].shift()()}
+
+// ── רינדור גרף עמודות ─────────────────────────────────────────
+function renderBarChart(bc){var cats=bc.cats,vals=bc.vals;var w=300,h=150,pL=28,pB=26,pT=10,pR=8;var maxV=Math.max.apply(null,vals),cH=h-pT-pB,cW=w-pL-pR;var bW=Math.floor(cW/cats.length*0.6),gap=cW/cats.length;var cols=['#6c63ff','#ff6584','#43e97b','#f7b731','#4facfe'];var bars='',grid='';for(var i=1;i<=4;i++){var y=pT+cH-(i/4)*cH;grid+='<line x1="'+pL+'" y1="'+Math.round(y)+'" x2="'+(w-pR)+'" y2="'+Math.round(y)+'" stroke="#2e3250" stroke-width="1"/><text x="'+(pL-3)+'" y="'+Math.round(y+4)+'" text-anchor="end" fill="#8b8fa8" font-size="9">'+Math.round(i/4*maxV)+'</text>'}cats.forEach(function(c,i){var bh=Math.max(2,Math.round((vals[i]/maxV)*cH));var x=pL+i*gap+(gap-bW)/2;var yb=pT+cH-bh;bars+='<rect x="'+Math.round(x)+'" y="'+Math.round(yb)+'" width="'+bW+'" height="'+bh+'" rx="3" fill="'+cols[i%cols.length]+'" opacity="0.85"/><text x="'+Math.round(x+bW/2)+'" y="'+Math.round(yb-3)+'" text-anchor="middle" fill="#e8eaf6" font-size="10" font-weight="700">'+vals[i]+'</text><text x="'+Math.round(x+bW/2)+'" y="'+(h-3)+'" text-anchor="middle" fill="#8b8fa8" font-size="9">'+c+'</text>'});var svg='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto"><line x1="'+pL+'" y1="'+pT+'" x2="'+pL+'" y2="'+(pT+cH)+'" stroke="#2e3250" stroke-width="1.5"/><line x1="'+pL+'" y1="'+(pT+cH)+'" x2="'+(w-pR)+'" y2="'+(pT+cH)+'" stroke="#2e3250" stroke-width="1.5"/>'+grid+bars+'</svg>';var d=document.createElement('div');d.className='chart-wrap';d.innerHTML=svg;return d}
+
+// ── רינדור תרשים עוגה ─────────────────────────────────────────
+function renderPieChart(pc){var slices=pc.slices;var r=70,cx=80,cy=80;var startAngle=-Math.PI/2;var paths='';slices.forEach(function(sl){var angle=(sl.pct/100)*2*Math.PI;var endAngle=startAngle+angle;var x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle);var x2=cx+r*Math.cos(endAngle),y2=cy+r*Math.sin(endAngle);var large=angle>Math.PI?1:0;var midA=startAngle+angle/2;var tx=cx+(r*0.65)*Math.cos(midA),ty=cy+(r*0.65)*Math.sin(midA);paths+='<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+large+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+sl.color+'" opacity="0.9"/>';if(sl.pct>=8)paths+='<text x="'+tx.toFixed(1)+'" y="'+ty.toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="11" font-weight="700">'+sl.pct+'%</text>';startAngle=endAngle});var legend=slices.map(function(sl){return'<div class="pie-leg-item"><div class="pie-dot" style="background:'+sl.color+'"></div><span>'+sl.label+': '+sl.pct+'%</span></div>'}).join('');var wrap=document.createElement('div');wrap.className='pie-wrap';wrap.innerHTML='<svg viewBox="0 0 160 160" style="width:140px;height:140px;flex-shrink:0">'+paths+'</svg><div class="pie-legend">'+legend+'</div>';return wrap}
+
+// ── זרימת שאלות ───────────────────────────────────────────────
+function nextQuestion(){
+  if(questionsThisSession>=QPQ){showCelebration();return}
+  answered=false;hintsUsed=0;selectedChoice=null;
+  currentQuestion=generateQuestion(currentLevel);
+  currentAnswer=currentQuestion.ans;
+  document.getElementById('qTypeTag').textContent=currentQuestion.type;
+  document.getElementById('qText').innerHTML=currentQuestion.text;
+  var fb=document.getElementById('feedbackBox');fb.style.display='none';fb.className='feedback';
+  var da=document.getElementById('datasetArea');da.innerHTML='';
+  if(currentQuestion.dataset){var box=document.createElement('div');box.className='dataset-box';box.innerHTML='<div class="dataset-label">נתונים</div>';currentQuestion.dataset.forEach(function(v){var c=document.createElement('div');c.className='chip';c.textContent=v;box.appendChild(c)});da.appendChild(box)}
+  if(currentQuestion.freqTable){var ft=currentQuestion.freqTable;var t=document.createElement('table');t.className='ftable';t.innerHTML='<thead><tr>'+ft.hdrs.map(function(h){return'<th>'+h+'</th>'}).join('')+'</tr></thead>';var tb=document.createElement('tbody');ft.vals.forEach(function(v,i){var tr=document.createElement('tr');tr.innerHTML='<td>'+v+'</td><td>'+ft.fr[i]+'</td>';tb.appendChild(tr)});t.appendChild(tb);da.appendChild(t)}
+  var ca=document.getElementById('chartArea');ca.innerHTML='';
+  if(currentQuestion.barChart)ca.appendChild(renderBarChart(currentQuestion.barChart));
+  if(currentQuestion.pieChart)ca.appendChild(renderPieChart(currentQuestion.pieChart));
+  var an=document.getElementById('answerArea');an.innerHTML='';
+  if(currentQuestion.inp==='num'){var inp=document.createElement('input');inp.type='number';inp.inputmode='decimal';inp.className='num-input';inp.id='numInput';inp.placeholder='\u05D4\u05EA\u05E9\u05D5\u05D1\u05D4 \u05E9\u05DC\u05DA...';inp.addEventListener('keydown',function(e){if(e.key==='Enter')submitAnswer()});an.appendChild(inp);setTimeout(function(){inp.focus()},80)}
+  else{var g=document.createElement('div');g.className='choices';(currentQuestion.choices||[]).forEach(function(c){var b=document.createElement('button');b.className='choice-btn';b.textContent=c;b.onclick=function(){if(answered)return;selectedChoice=c;document.querySelectorAll('.choice-btn').forEach(function(x){x.classList.remove('sel')});b.classList.add('sel')};g.appendChild(b)});an.appendChild(g)}
+  document.getElementById('hintBtn').style.display='';
+  var sb=document.getElementById('submitBtn');sb.style.display='';sb.className='btn btn-primary';sb.textContent='\u05D1\u05D3\u05D5\u05E7 \u2713';sb.onclick=submitAnswer;
+  document.getElementById('progressBar').style.width=(questionsThisSession/QPQ*100)+'%';
+  questionsThisSession++;
+}
+
+function submitAnswer(){
+  if(answered){nextQuestion();return}
+  var ua;
+  if(currentQuestion.inp==='num'){var inp=document.getElementById('numInput');ua=parseFloat(inp.value);if(isNaN(ua)){inp.focus();return}}
+  else{if(!selectedChoice)return;ua=selectedChoice}
+  answered=true;selectedChoice=null;
+  var ok=typeof currentAnswer==='number'?Math.abs(ua-currentAnswer)<0.06:String(ua).trim()===String(currentAnswer).trim();
+  var fb=document.getElementById('feedbackBox');
+  if(ok){fb.className='feedback correct';streak++;if(streak>sessionStreak)sessionStreak=streak;correctThisSession++;var pts=hintsUsed>0?5:10;score+=pts;fb.innerHTML='&#9989; \u05E0\u05DB\u05D5\u05DF! +'+pts+' \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA'+(hintsUsed?' (\u05E0\u05E2\u05D6\u05E8\u05EA\u05DD \u05D1\u05E8\u05DE\u05D6)':'')+'<br><small>'+currentQuestion.expl+'</small>';checkTrophies();if(streak>=3)showStreakPopup();if(currentQuestion.dataset)document.querySelectorAll('.chip').forEach(function(c){if(parseFloat(c.textContent)===currentAnswer)c.classList.add('hl')})}
+  else{fb.className='feedback wrong';streak=0;fb.innerHTML='&#10060; \u05DC\u05D0 \u05D1\u05D3\u05D9\u05D5\u05E7. \u05D4\u05EA\u05E9\u05D5\u05D1\u05D4 \u05D4\u05E0\u05DB\u05D5\u05E0\u05D4: <strong>'+currentAnswer+'</strong><br><small>'+currentQuestion.expl+'</small>';if(currentQuestion.inp==='ch'){document.querySelectorAll('.choice-btn').forEach(function(b){if(b.textContent===String(currentAnswer))b.classList.add('cor');if(b.textContent===String(ua)&&b.textContent!==String(currentAnswer))b.classList.add('wrg');b.disabled=true})}else{var i=document.getElementById('numInput');if(i)i.classList.add('wrong')}}
+  fb.style.display='block';updateHUD();
+  var sb=document.getElementById('submitBtn');sb.className='btn btn-next';
+  sb.textContent=questionsThisSession>=QPQ?'\u05E8\u05D0\u05D5 \u05EA\u05D5\u05E6\u05D0\u05D5\u05EA \uD83C\uDF89':'\u05D4\u05D1\u05D0 \u2192';
+  document.getElementById('hintBtn').style.display='none';
+}
+
+function showHint(){hintsUsed++;var fb=document.getElementById('feedbackBox');fb.className='feedback hint';fb.innerHTML='&#128161; \u05E8\u05DE\u05D6: '+currentQuestion.hint;fb.style.display='block'}
+function updateHUD(){document.getElementById('streakDisp').textContent='\uD83D\uDD25 '+streak;document.getElementById('scoreDisp').textContent='\u2B50 '+score}
+function showStreakPopup(){var p=document.getElementById('streakPopup');p.textContent=streak>=10?'\uD83D\uDD25 '+streak+' ברצף!!':streak>=5?'\uD83C\uDF1F רצף של '+streak+'!':'\uD83D\uDD25 רצף של '+streak+'!';p.classList.add('show');setTimeout(function(){p.classList.remove('show')},1500)}
+function checkTrophies(){if(totalCorrect+correctThisSession===1)saveTrophy('fc');if(streak===3)saveTrophy('s3');if(streak===5)saveTrophy('s5');if(streak===10)saveTrophy('s10');if(totalScore+score>=100)saveTrophy('c100');if(totalScore+score>=500)saveTrophy('c500')}
+
+function showCelebration(){
+  if(sessionStreak>bestStreak)bestStreak=sessionStreak;
+  var pct=Math.round((correctThisSession/QPQ)*100);
+  if(pct===100)saveTrophy('perf');if(currentLevel==='hard')saveTrophy('hm');if(currentLevel==='genius')saveTrophy('gm');
+  var ico='&#128202;',tit='\u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3!',msg='\u05D4\u05DE\u05E9\u05D9\u05DB\u05D9 \u05DC\u05D4\u05EA\u05D0\u05DE\u05DF!';
+  if(pct===100){ico='&#127942;';tit='\u05DE\u05D5\u05E9\u05DC\u05DD!';msg='\u05DE\u05D3\u05D4\u05D9\u05DD - 10/10!'}
+  else if(pct>=80){ico='&#11088;';tit='\u05DE\u05E2\u05D5\u05DC\u05D4!';msg:pct+'% \u05E0\u05DB\u05D5\u05DF!'}
+  else if(pct>=60){ico='&#128170;';tit='\u05D9\u05E4\u05D4 \u05DE\u05D0\u05D5\u05D3!';msg=pct+'% - \u05D4\u05DE\u05E9\u05D9\u05DB\u05D9!'}
+  if(pct>=80)msg=pct+'% \u05E0\u05DB\u05D5\u05DF!';
+  document.getElementById('celebIcon').innerHTML=ico;document.getElementById('celebTitle').textContent=tit;document.getElementById('celebMsg').textContent=msg;
+  document.getElementById('celebScore').textContent=score;document.getElementById('celebCorrect').textContent=correctThisSession+'/10';document.getElementById('celebStreak').textContent=sessionStreak;
+  var earned=loadTrophies();var tr=document.getElementById('trophiesRow');
+  if(earned.length>0){tr.style.display='';document.getElementById('trophyList').innerHTML=earned.map(function(id){var t=TROPHIES[id];return t?'<div class="trophy-badge">'+t.i+' '+t.n+'</div>':''}).join('')}
+  if(pct>=80){var cols=['#6c63ff','#ff6584','#43e97b','#f7b731','#4facfe'];for(var i=0;i<40;i++){(function(delay){setTimeout(function(){var el=document.createElement('div');el.className='cfp';el.style.left=Math.random()*100+'vw';el.style.top='-10px';el.style.background=cols[Math.floor(Math.random()*cols.length)];el.style.borderRadius=Math.random()>.5?'50%':'2px';el.style.animationDuration=(1.5+Math.random()*1.5)+'s';document.body.appendChild(el);setTimeout(function(){el.remove()},3000)},delay)})(i*40)}}
+  totalScore+=score;totalCorrect+=correctThisSession;if(sessionStreak>bestStreak)bestStreak=sessionStreak;
+  document.getElementById('totalScore').textContent=totalScore;document.getElementById('totalCorrect').textContent=totalCorrect;document.getElementById('bestStreak').textContent=bestStreak;
+  showScreen('celebScreen');
+}
+</script>
+</body>
+</html>
